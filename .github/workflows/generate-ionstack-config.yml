@@ -290,16 +290,35 @@ jobs:
                   print('[!] WARNING: No .symtab in output ELF')
           "
 
-      # ============================================================
-      # Generate ionstack.conf
-      # ============================================================
-      - name: Generate IonStack config
-        id: generate
-        run: |
-          python3 gen_ionstack_config.py kernel.elf ionstack.conf
-          echo '==================== Generated Config ===================='
-          cat ionstack.conf
-          echo '=========================================================='
+     - name: Generate IonStack config
+  id: generate
+  shell: bash
+  run: |
+    set -e
+
+    echo "[*] Generating ionstack.conf..."
+    python3 gen_ionstack_config.py kernel.elf ionstack.conf
+
+    echo
+    echo "==================== ionstack.conf ===================="
+    if [ ! -f ionstack.conf ]; then
+      echo "[!] ERROR: ionstack.conf was not created!"
+      exit 1
+    fi
+
+    sed -n '1,250p' ionstack.conf
+    echo "========================================================"
+
+    echo
+    echo "[*] Checking for accidental GitHub Actions/shell text..."
+
+    if grep -Eq 'MAGISK_URL|ROM_URL|RENAMED_FILE|\$\{\{|payload\.bin|\$\(xxd' ionstack.conf; then
+      echo "[!] ERROR: ionstack.conf contains workflow/shell text!"
+      echo "[!] This means the generated config is malformed."
+      exit 1
+    fi
+
+    echo "[+] ionstack.conf passed the sanity check."
 
       # ============================================================
       # Upload artifacts
