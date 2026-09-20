@@ -329,21 +329,19 @@ def resolve_all(elf_path: str):
                 if addr:
                     method = sym_name
                     break
+        if addr is None:
+            tried = ", ".join(rule["symbols"])
+            if rule.get("cfi_first"):
+                tried += " [.cfi_jt variants also tried]"
 
-       if addr is None:
-    tried = ", ".join(rule["symbols"])
-    if rule.get("cfi_first"):
-        tried += " [.cfi_jt variants also tried]"
+            if key == "selinux_blob_sizes_off":
+                warnings.append(
+                    f"{key}: symbol not found; leaving it out of the generated config"
+                )
+            else:
+                errors.append(f"{key}: no symbol found (tried: {tried})")
 
-    if key == "selinux_blob_sizes_off":
-        warnings.append(
-            f"{key}: symbol not found; leaving it out of the generated config"
-        )
-    else:
-        errors.append(f"{key}: no symbol found (tried: {tried})")
-
-    continue
-
+            continue
         offset = addr - base
         results[key] = {
             "addr": addr,
