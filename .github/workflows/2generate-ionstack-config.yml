@@ -309,7 +309,11 @@ jobs:
         with:
           name: ionstack-config
           path: ionstack.conf
-
+                  - name: Upload ionstack.conf
+  uses: actions/upload-artifact@v4
+  with:
+    name: ionstack-config
+    path: ionstack.conf
       - name: Upload kernel ELF (debug, 3-day retention)
         uses: actions/upload-artifact@v4
         with:
